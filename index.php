@@ -1,12 +1,21 @@
 <?php
-require_once 'conexion.php';
+// Incluir el archivo de conexión
+require_once __DIR__ . '/conexion.php'; // Ajuste: Usa la ruta correcta para cargar conexion.php
+
+// Configurar los encabezados
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-
-
+// Obtener los datos enviados desde Google Apps Script
 $data = json_decode(file_get_contents("php://input"), true);
 
+// Verificar si se recibieron datos
+if (!$data) {
+    echo json_encode(["status" => "error", "message" => "No se recibieron datos"]);
+    exit;
+}
+
+// Insertar los datos en MySQL
 foreach ($data as $row) {
     $sql = "INSERT INTO postulaciones_cecarmun (
         marca_temporal, nombre_apellidos, correo_electronico, tipo_identificacion, 
@@ -17,7 +26,7 @@ foreach ($data as $row) {
         autoriza_habeas_data
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-    $stmt = $conn->prepare($sql);
+    $stmt = $conexion->prepare($sql);
     $stmt->bind_param(
         "ssssssssssssssssssss", // 20 strings
         $row['marca_temporal'],
@@ -45,7 +54,8 @@ foreach ($data as $row) {
     $stmt->close();
 }
 
-$conn->close();
+// Cerrar la conexión
+$conexion->close();
 
 echo json_encode(["status" => "success", "message" => "Datos insertados correctamente"]);
 ?>
