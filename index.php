@@ -1,126 +1,125 @@
 <?php
-// Incluir el archivo de conexión
 require_once __DIR__ . '/conexion.php';
 
-// Configurar los encabezados
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+// Consulta para obtener todos los datos de la tabla
+$sql = "SELECT * FROM postulaciones_cecarmun";
+$result = $conexion->query($sql);
 
-// Obtener los datos enviados desde Google Apps Script
-$input = file_get_contents("php://input");
-$data = json_decode($input, true);
-
-// Verificar la estructura de los datos y manejar errores
-if (!$data) {
-    echo json_encode([
-        "status" => "error", 
-        "message" => "No se recibieron datos o formato incorrecto",
-        "input" => $input // Devolver el input para depuración
-    ]);
-    exit;
-}
-
-// Verificar si $data es un objeto individual o un array de objetos
-if (isset($data['marca_temporal'])) {
-    // Si $data es un objeto individual, convertirlo a un array de un solo elemento
-    $data = [$data];
-}
-
-// Insertar los datos en MySQL
-$inserted = 0;
-$errors = [];
-
-foreach ($data as $row) {
-    if (!is_array($row)) {
-        $errors[] = "Fila no válida: no es un array";
-        continue;
-    }
-    
-    // Verificar que todas las claves necesarias existan
-    $required_keys = [
-        'marca_temporal', 'nombre_apellidos', 'correo_electronico', 'tipo_identificacion', 
-        'numero_identificacion', 'numero_contacto', 'fecha_nacimiento', 'institucion', 
-        'programa_academico', 'modalidad_estudio', 'semestre', 'labora_actualmente', 
-        'entidad_donde_labora', 'ideas_mejorar_cecarmun', 'experiencia_comite_organizador', 
-        'primera_opcion_rol', 'segunda_opcion_rol', 'compromiso_eventos', 'leyo_terminos', 
-        'autoriza_habeas_data'
-    ];
-    
-    $missing_keys = [];
-    foreach ($required_keys as $key) {
-        if (!isset($row[$key])) {
-            $missing_keys[] = $key;
-        }
-    }
-    
-    if (!empty($missing_keys)) {
-        $errors[] = "Faltan claves requeridas: " . implode(', ', $missing_keys);
-        continue;
-    }
-    
-    $sql = "INSERT INTO postulaciones_cecarmun (
-        marca_temporal, nombre_apellidos, correo_electronico, tipo_identificacion, 
-        numero_identificacion, numero_contacto, fecha_nacimiento, institucion, 
-        programa_academico, modalidad_estudio, semestre, labora_actualmente, 
-        entidad_donde_labora, ideas_mejorar_cecarmun, experiencia_comite_organizador, 
-        primera_opcion_rol, segunda_opcion_rol, compromiso_eventos, leyo_terminos, 
-        autoriza_habeas_data
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-    $stmt = $conexion->prepare($sql);
-    
-    if (!$stmt) {
-        $errors[] = "Error en la preparación de la consulta: " . $conexion->error;
-        continue;
-    }
-    
-    $stmt->bind_param(
-        "ssssssssssssssssssss", // 20 strings
-        $row['marca_temporal'],
-        $row['nombre_apellidos'],
-        $row['correo_electronico'],
-        $row['tipo_identificacion'],
-        $row['numero_identificacion'],
-        $row['numero_contacto'],
-        $row['fecha_nacimiento'],
-        $row['institucion'],
-        $row['programa_academico'],
-        $row['modalidad_estudio'],
-        $row['semestre'],
-        $row['labora_actualmente'],
-        $row['entidad_donde_labora'],
-        $row['ideas_mejorar_cecarmun'],
-        $row['experiencia_comite_organizador'],
-        $row['primera_opcion_rol'],
-        $row['segunda_opcion_rol'],
-        $row['compromiso_eventos'],
-        $row['leyo_terminos'],
-        $row['autoriza_habeas_data']
-    );
-    
-    if (!$stmt->execute()) {
-        $errors[] = "Error al ejecutar la consulta: " . $stmt->error;
-    } else {
-        $inserted++;
-    }
-    
-    $stmt->close();
-}
-
-// Cerrar la conexión
-$conexion->close();
-
-// Enviar respuesta
-if (empty($errors)) {
-    echo json_encode([
-        "status" => "success", 
-        "message" => "Se insertaron $inserted registros correctamente"
-    ]);
-} else {
-    echo json_encode([
-        "status" => "partial_error",
-        "message" => "Se insertaron $inserted registros, pero hubo errores",
-        "errors" => $errors
-    ]);
+if (!$result) {
+    die("Error en la consulta: " . $conexion->error);
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Postulaciones</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input[type="text"] {
+            padding: 6px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Lista de Postulaciones</h2>
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar...">
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Marca Temporal</th>
+                <th>Nombre y Apellidos</th>
+                <th>Correo Electrónico</th>
+                <th>Tipo Identificación</th>
+                <th>Número Identificación</th>
+                <th>Número Contacto</th>
+                <th>Fecha Nacimiento</th>
+                <th>Institución</th>
+                <th>Programa Académico</th>
+                <th>Modalidad Estudio</th>
+                <th>Semestre</th>
+                <th>Labora Actualmente</th>
+                <th>Entidad donde Labora</th>
+                <th>Ideas Mejorar CECARMUN</th>
+                <th>Experiencia Comité Organizador</th>
+                <th>Primera Opción Rol</th>
+                <th>Segunda Opción Rol</th>
+                <th>Compromiso Eventos</th>
+                <th>Leyó Términos</th>
+                <th>Autoriza Habeas Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['marca_temporal']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['nombre_apellidos']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['correo_electronico']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['tipo_identificacion']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['numero_identificacion']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['numero_contacto']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['fecha_nacimiento']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['institucion']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['programa_academico']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['modalidad_estudio']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['semestre']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['labora_actualmente']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['entidad_donde_labora']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['ideas_mejorar_cecarmun']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['experiencia_comite_organizador']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['primera_opcion_rol']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['segunda_opcion_rol']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['compromiso_eventos']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['leyo_terminos']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['autoriza_habeas_data']) . "</td>";
+                echo "</tr>";
+            }
+            $conexion->close();
+            ?>
+        </tbody>
+    </table>
+
+    <script>
+        function filterTable() {
+            var input = document.getElementById("searchInput");
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById("dataTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) { // Comienza desde 1 para omitir la cabecera
+                var found = false;
+                var td = tr[i].getElementsByTagName("td");
+                for (var j = 0; j < td.length; j++) {
+                    var cell = td[j];
+                    if (cell) {
+                        var text = cell.textContent || cell.innerText;
+                        if (text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                tr[i].style.display = found ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>
