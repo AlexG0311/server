@@ -1,4 +1,5 @@
 <?php
+require_once 'conexion.php';
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
