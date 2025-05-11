@@ -1,93 +1,155 @@
- body{
-            background-color: black;
-        }
-        
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            
-        }
-        th, td {
-            color: white;
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color:rgb(0, 0, 0);
-        }
-        input[type="text"] {
-            padding: 6px;
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 10px;
-        }
-        .details-btn {
-            padding: 5px 10px;
-            background-color:rgb(255, 255, 255);
-            color: black;
-            border: none;
-            cursor: pointer;
-        }
-        .details-btn:hover {
-            background-color:rgb(195, 195, 195);
-        }
-        /* Estilos del modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1;
-            overflow: auto;
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 5px;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        /* Hacer la tabla responsiva */
-        @media screen and (max-width: 600px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            th {
-                display: none;
-            }
-            td {
-                display: block;
-                text-align: right;
-                position: relative;
-                padding-left: 50%;
-            }
-            td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 0;
-                width: 45%;
-                padding-left: 10px;
-                font-weight: bold;
-                text-align: left;
-            }
-        }
+/* Fondo de la página */
+body {
+    background-color: #1a1a1a; /* Fondo oscuro */
+    color: white; /* Texto blanco para resaltar sobre el fondo oscuro */
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Título */
+h2 {
+    text-align: center;
+    color: #f39c12; /* Color dorado para el título */
+    font-size: 2.5rem;
+    margin-top: 40px;
+}
+
+/* Estilo para el input de búsqueda */
+input[type="text"] {
+    padding: 10px;
+    width: 100%;
+    max-width: 350px;
+    margin: 20px auto;
+    display: block;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    background-color: #333;
+    color: white;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #f39c12;
+    box-shadow: 0 0 8px rgba(243, 156, 18, 0.5);
+}
+
+/* Estilo de la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #2c3e50; /* Fondo gris azulado para la tabla */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo de las celdas */
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #34495e; /* Borde suave entre celdas */
+}
+
+th {
+    background-color: #34495e; /* Gris oscuro para el encabezado */
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Botón de detalles */
+.details-btn {
+    padding: 6px 15px;
+    background-color: #16a085; /* Verde suave */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.details-btn:hover {
+    background-color: #1abc9c; /* Verde más brillante al pasar el mouse */
+}
+
+/* Estilos del modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro semi-transparente */
+    z-index: 1000;
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: #1b1b1b;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+
+.close:hover,
+.close:focus {
+    color: #333;
+    cursor: pointer;
+}
+
+/* Hacer la tabla responsiva */
+@media screen and (max-width: 600px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    th {
+        display: none;
+    }
+
+    td {
+        display: block;
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+    }
+
+    td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+}
+/* Botón de eliminar */
+.delete-btn {
+    padding: 6px 15px;
+    background-color: #e74c3c; /* Rojo suave */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b; /* Rojo más fuerte al pasar el mouse */
+}
