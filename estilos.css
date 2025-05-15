@@ -15,7 +15,7 @@ body {
     z-index: 100;
 }
 .logo {
-    height: 170px;
+   height: 130px;
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); /* Sombra sutil para el logo */
 }
@@ -41,21 +41,25 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 10px;
+
+
+    max-width: 100%;
 }
 
 /* Buscador */
 input[type="text"] {
-    padding: 10px;
-    width: 100%;
-    max-width: 350px;
-    margin: 20px auto;
+     width: 440px;
+
+     padding: 10px;
+    margin-left: 35%;
+    margin-right: auto;
     display: block;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #834747;
     font-size: 1rem;
     background-color: white;
     color: #333;
- margin-right: 400px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 input[type="text"]:focus {
