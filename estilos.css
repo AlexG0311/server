@@ -254,12 +254,17 @@ tr:hover td {
         font-weight: bold;
         text-align: left;
     }
-    .actions-container, .button-container {
-        text-align: center;
+    .tools {
+        flex-direction: column;
+        align-items: center;
+        max-width: 100%;
     }
-    .delete-btn {
-        margin: auto;
-        display: inline-block;
+    input[type="text"] {
+        width: 100%;
+        max-width: 300px;
+    }
+    .delete-btn, .recycle-bin-link {
+        margin: 5px 0;
     }
 }
 

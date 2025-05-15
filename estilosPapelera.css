@@ -22,6 +22,7 @@ body {
 
 /* Título */
 h2 {
+    
     text-align: center;
     color: #2d8c8b;
     font-size: 2.5rem;
@@ -230,6 +231,7 @@ tr:hover td {
 }
 
 /* Responsive */
+/* Responsive */
 @media screen and (max-width: 600px) {
     .logo {
         height: 50px;
@@ -259,12 +261,17 @@ tr:hover td {
         font-weight: bold;
         text-align: left;
     }
-    .actions-container, .button-container {
-        text-align: center;
+    .tools {
+        flex-direction: column;
+        align-items: center;
+        max-width: 100%;
     }
-    .delete-btn {
-        margin: auto;
-        display: inline-block;
+    input[type="text"] {
+        width: 100%;
+        max-width: 300px;
+    }
+    .delete-btn, .recycle-bin-link {
+        margin: 5px 0;
     }
 }
 
