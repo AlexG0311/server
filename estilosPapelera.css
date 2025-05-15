@@ -15,7 +15,7 @@ body {
     z-index: 100;
 }
 .logo {
-    height: 170px;
+    height: 130px;
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); /* Sombra sutil para el logo */
 }
@@ -50,6 +50,7 @@ input[type="text"] {
     max-width: 350px;
     margin: 20px auto;
     display: block;
+    margin-left: 460px;
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 1rem;
@@ -198,11 +199,14 @@ tr:hover td {
 .restore-btn {
     background-color: #28a745;
     color: white;
+    margin-left: 20px;
     border: none;
+
     padding: 10px 20px;
+    width: 150px;
     cursor: pointer;
-    border-radius: 5px;
-    margin: 10px;
+    border-radius: 40px;
+    margin-right: 10px;
 }
 .restore-btn:hover {
     background-color: #218838;
@@ -210,8 +214,9 @@ tr:hover td {
 
 /* Enlace de volver */
 .back-link {
+    margin-left: 40px;
     display: inline-block;
-    margin: 10px 0;
+ 
     color: #007bff;
     text-decoration: none;
     font-size: 16px;
