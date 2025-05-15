@@ -1,143 +1,126 @@
 <?php
-require __DIR__ . '/postulaciones.php';
-?>
+// Incluir el archivo de conexión
+require_once __DIR__ . '/conexion.php';
 
-<?php
-// Handle error message for no selection
-if (isset($_GET['error']) && $_GET['error'] === 'sin-seleccion') {
-    echo "
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-    </head>
-    <body>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Swal.fire({
-                    icon: 'warning',
-                    title: '¡Atención!',
-                    text: 'Debes seleccionar al menos un registro para eliminar.',
-                    confirmButtonText: 'Entendido'
-                }).then(() => {
-                    window.location.href = 'index.php'; // Clean the URL
-                });
-            });
-        </script>
-    </body>
-    </html>";
+// Configurar los encabezados
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
+
+// Obtener los datos enviados desde Google Apps Script
+$input = file_get_contents("php://input");
+$data = json_decode($input, true);
+
+// Verificar la estructura de los datos y manejar errores
+if (!$data) {
+    echo json_encode([
+        "status" => "error", 
+        "message" => "No se recibieron datos o formato incorrecto",
+        "input" => $input // Devolver el input para depuración
+    ]);
     exit;
 }
 
-// Handle success message for deleted records
-if (isset($_GET['success']) && $_GET['success'] === 'deleted') {
-    echo "
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-    </head>
-    <body>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: 'Los registros seleccionados han sido movidos a la papelera.',
-                    confirmButtonText: 'Entendido'
-                }).then(() => {
-                    window.location.href = 'index.php'; // Clean the URL
-                });
-            });
-        </script>
-    </body>
-    </html>";
-    exit;
+// Verificar si $data es un objeto individual o un array de objetos
+if (isset($data['marca_temporal'])) {
+    // Si $data es un objeto individual, convertirlo a un array de un solo elemento
+    $data = [$data];
+}
+
+// Insertar los datos en MySQL
+$inserted = 0;
+$errors = [];
+
+foreach ($data as $row) {
+    if (!is_array($row)) {
+        $errors[] = "Fila no válida: no es un array";
+        continue;
+    }
+    
+    // Verificar que todas las claves necesarias existan
+    $required_keys = [
+        'marca_temporal', 'nombre_apellidos', 'correo_electronico', 'tipo_identificacion', 
+        'numero_identificacion', 'numero_contacto', 'fecha_nacimiento', 'institucion', 
+        'programa_academico', 'modalidad_estudio', 'semestre', 'labora_actualmente', 
+        'entidad_donde_labora', 'ideas_mejorar_cecarmun', 'experiencia_comite_organizador', 
+        'primera_opcion_rol', 'segunda_opcion_rol', 'compromiso_eventos', 'leyo_terminos', 
+        'autoriza_habeas_data'
+    ];
+    
+    $missing_keys = [];
+    foreach ($required_keys as $key) {
+        if (!isset($row[$key])) {
+            $missing_keys[] = $key;
+        }
+    }
+    
+    if (!empty($missing_keys)) {
+        $errors[] = "Faltan claves requeridas: " . implode(', ', $missing_keys);
+        continue;
+    }
+    
+    $sql = "INSERT INTO postulaciones_cecarmun (
+        marca_temporal, nombre_apellidos, correo_electronico, tipo_identificacion, 
+        numero_identificacion, numero_contacto, fecha_nacimiento, institucion, 
+        programa_academico, modalidad_estudio, semestre, labora_actualmente, 
+        entidad_donde_labora, ideas_mejorar_cecarmun, experiencia_comite_organizador, 
+        primera_opcion_rol, segunda_opcion_rol, compromiso_eventos, leyo_terminos, 
+        autoriza_habeas_data
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conexion->prepare($sql);
+    
+    if (!$stmt) {
+        $errors[] = "Error en la preparación de la consulta: " . $conexion->error;
+        continue;
+    }
+    
+    $stmt->bind_param(
+        "ssssssssssssssssssss", // 20 strings
+        $row['marca_temporal'],
+        $row['nombre_apellidos'],
+        $row['correo_electronico'],
+        $row['tipo_identificacion'],
+        $row['numero_identificacion'],
+        $row['numero_contacto'],
+        $row['fecha_nacimiento'],
+        $row['institucion'],
+        $row['programa_academico'],
+        $row['modalidad_estudio'],
+        $row['semestre'],
+        $row['labora_actualmente'],
+        $row['entidad_donde_labora'],
+        $row['ideas_mejorar_cecarmun'],
+        $row['experiencia_comite_organizador'],
+        $row['primera_opcion_rol'],
+        $row['segunda_opcion_rol'],
+        $row['compromiso_eventos'],
+        $row['leyo_terminos'],
+        $row['autoriza_habeas_data']
+    );
+    
+    if (!$stmt->execute()) {
+        $errors[] = "Error al ejecutar la consulta: " . $stmt->error;
+    } else {
+        $inserted++;
+    }
+    
+    $stmt->close();
+}
+
+// Cerrar la conexión
+$conexion->close();
+
+// Enviar respuesta
+if (empty($errors)) {
+    echo json_encode([
+        "status" => "success", 
+        "message" => "Se insertaron $inserted registros correctamente"
+    ]);
+} else {
+    echo json_encode([
+        "status" => "partial_error",
+        "message" => "Se insertaron $inserted registros, pero hubo errores",
+        "errors" => $errors
+    ]);
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilos.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Lista de Postulaciones</title>
-</head>
-<body>
-    <div class="logo-container">
-        <img src="LOGO.-removebg-preview.png" alt="Logo de la empresa" class="logo">
-    </div>
-
-    <h2>Lista de Postulaciones</h2>
-
-    <div class="actions-container">
-        <a href="papelera.php" class="recycle-bin-link" title="Ver papelera">
-            <i class="fa-solid fa-trash-can"></i> Papelera
-        </a>
-    </div>
-
-    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar...">
-
-    <!-- FORMULARIO PARA ELIMINACIÓN MASIVA -->
-    <form method="POST" action="eliminar_masivo.php" onsubmit="return confirm('¿Estás seguro de eliminar los seleccionados?');">
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
-                    <th>Nombre y Apellidos</th>
-                    <th>Correo Electrónico</th>
-                    <th>Primera Opción Rol</th>
-                    <th>Segunda Opción Rol</th>
-                    <th>Más Información</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td><input type='checkbox' name='ids[]' value='" . $row['id'] . "'></td>";
-                    echo "<td data-label='Nombre y Apellidos'>" . htmlspecialchars($row['nombre_apellidos']) . "</td>";
-                    echo "<td data-label='Correo Electrónico'>" . htmlspecialchars($row['correo_electronico']) . "</td>";
-                    echo "<td data-label='Primera Opción Rol'>" . htmlspecialchars($row['primera_opcion_rol']) . "</td>";
-                    echo "<td data-label='Segunda Opción Rol'>" . htmlspecialchars($row['segunda_opcion_rol']) . "</td>";
-                    echo "<td data-label='Más Información'>
-                        <button type='button' class='details-btn' onclick='showDetails(" . htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') . ")'>Ver detalles</button>
-                    </td>";
-                    echo "</tr>";
-                }
-                $conexion->close();
-                ?>
-            </tbody>
-        </table>
-
-        <!-- BOTÓN PARA ELIMINACIÓN MASIVA -->
-        <div class="button-container">
-            <button type="submit" class="delete-btn" title="Eliminar seleccionados">
-                <i class="fa-solid fa-trash-can"></i> Eliminar seleccionados
-            </button>
-        </div>
-    </form>
-
-    <!-- Modal para mostrar detalles -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">×</span>
-            <h3>Detalles del Registro</h3>
-            <div id="modalBody"></div>
-        </div>
-    </div>
-
-    <script src="filtro.js"></script>
-
-    <script>
-        document.getElementById('selectAll').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="ids[]"]');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
-    </script>
-</body>
-</html>
