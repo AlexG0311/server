@@ -77,18 +77,25 @@ if (isset($_GET['success']) && $_GET['success'] === 'deleted') {
     <form method="POST" action="eliminar_masivo.php" onsubmit="return confirm('¿Estás seguro de eliminar los seleccionados?');">
     <div class = "tools">
         <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar...">
-   <!-- BOTÓN PARA ELIMINACIÓN MASIVA -->
+  
+<!--    
+
+     -->
+<?php
+$res = $cantidad->fetch_assoc();
+
+?>
+<?php
+echo "<label for='' > Personas Inscritas: "   . htmlspecialchars($res['cantidad']) . "</label>";
+?>
+
         <button type="submit" class="delete-btn" title="Eliminar seleccionados">
             <i class="fa-solid fa-trash-can"></i>
         </button>
           <a href="papelera.php" class="recycle-bin-link" title="Ver papelera">
         <i class="fa-solid fa-trash-can"></i> Papelera
-    </a>
-
-    </div>
-
-   
-  
+    </a>    
+    </div> 
         <table id="dataTable">
             <thead>
                 <tr>
